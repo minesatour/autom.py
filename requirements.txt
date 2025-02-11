@@ -1,0 +1,8 @@
+openai
+google-api-python-client
+moviepy
+gtts
+beautifulsoup4
+requests
+elevenlabs
+tweepy
