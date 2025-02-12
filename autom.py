@@ -5,7 +5,7 @@ import requests
 import openai
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
-from moviepy.editor import ImageClip, AudioFileClip, concatenate_videoclips  # Explicit imports
+from moviepy.editor import ImageClip, AudioFileClip, concatenate_videoclips
 from gtts import gTTS
 from bs4 import BeautifulSoup
 from elevenlabs import generate, save
@@ -38,24 +38,22 @@ def setup_user():
 # --------------------- STEP 1: FIND TRENDING TOPICS ---------------------
 def get_trending_topics():
     print("Finding trending topics...")
-    headers = {"User -Agent": "Mozilla/5.0"}
+    headers = {"User-Agent": "Mozilla/5.0"}  # Fixed header issue
     url = "https://trends.google.com/trends/trendingsearches/daily/rss"
-    response = requests.get(url, headers=headers)
     
+    response = requests.get(url, headers=headers)
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, "xml")
         trends = [item.title.text for item in soup.find_all("item")]
-        return random.choice(trends)
-    else:
-        return "Latest AI Technology Trends"
+        return random.choice(trends) if trends else "Latest AI Technology Trends"
+    return "Latest AI Technology Trends"
 
 # --------------------- STEP 2: GENERATE VIDEO SCRIPT ---------------------
 def generate_script(trend, openai_api_key):
     print(f"Generating video script for: {trend}...")
     openai.api_key = openai_api_key
 
-    prompt = f"Write an engaging YouTube video script about {trend}." \
-             "Make it informative, engaging, and encourage viewer interaction. Include a call to action for comments and subscriptions."
+    prompt = f"Write an engaging YouTube video script about {trend}. Make it informative, engaging, and encourage viewer interaction. Include a call to action for comments and subscriptions."
 
     response = openai.ChatCompletion.create(
         model="gpt-4",
@@ -69,11 +67,10 @@ def generate_voiceover(script, api_key, output_audio="voice.mp3"):
     print("Generating AI voiceover...")
     if api_key:
         audio = generate(text=script, voice="Rachel", api_key=api_key)
+        save(audio, output_audio)
     else:
         tts = gTTS(text=script, lang="en")
         tts.save(output_audio)
-        return
-    save(audio, output_audio)
 
 # --------------------- STEP 4: FIND RELEVANT IMAGES ---------------------
 def get_stock_images(keyword, save_folder="images"):
@@ -127,9 +124,13 @@ def upload_to_youtube(video_file, title, description, tags, youtube_api_key, cha
 def share_on_twitter(message, config):
     if config.get("twitter_api_key"):
         print("Sharing video on Twitter...")
-        auth = tweepy.OAuth1User Handler(config["twitter_api_key"], config["twitter_api_secret"], config["twitter_access_token"], config["twitter_access_secret"])
-        api = tweepy.API(auth)
-        api.update_status(message)
+        client = tweepy.Client(
+            consumer_key=config["twitter_api_key"],
+            consumer_secret=config["twitter_api_secret"],
+            access_token=config["twitter_access_token"],
+            access_token_secret=config["twitter_access_secret"]
+        )
+        client.create_tweet(text=message)
 
 def share_on_tiktok(video_file, config):
     if config.get("tiktok_username"):
@@ -139,7 +140,6 @@ def share_on_tiktok(video_file, config):
 # --------------------- RUN THE AUTOMATION ---------------------
 if __name__ == "__main__":
     try:
-        # Check if moviepy can be imported
         from moviepy.editor import ImageClip, AudioFileClip, concatenate_videoclips
     except ImportError as e:
         print(f"Error importing MoviePy: {e}")
