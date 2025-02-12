@@ -5,7 +5,7 @@ import requests
 import openai
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
-from moviepy.editor import *
+from moviepy.editor import ImageClip, AudioFileClip, concatenate_videoclips  # Explicit imports
 from gtts import gTTS
 from bs4 import BeautifulSoup
 from elevenlabs import generate, save
@@ -38,7 +38,7 @@ def setup_user():
 # --------------------- STEP 1: FIND TRENDING TOPICS ---------------------
 def get_trending_topics():
     print("Finding trending topics...")
-    headers = {"User-Agent": "Mozilla/5.0"}
+    headers = {"User -Agent": "Mozilla/5.0"}
     url = "https://trends.google.com/trends/trendingsearches/daily/rss"
     response = requests.get(url, headers=headers)
     
@@ -127,7 +127,7 @@ def upload_to_youtube(video_file, title, description, tags, youtube_api_key, cha
 def share_on_twitter(message, config):
     if config.get("twitter_api_key"):
         print("Sharing video on Twitter...")
-        auth = tweepy.OAuth1UserHandler(config["twitter_api_key"], config["twitter_api_secret"], config["twitter_access_token"], config["twitter_access_secret"])
+        auth = tweepy.OAuth1User Handler(config["twitter_api_key"], config["twitter_api_secret"], config["twitter_access_token"], config["twitter_access_secret"])
         api = tweepy.API(auth)
         api.update_status(message)
 
@@ -138,6 +138,14 @@ def share_on_tiktok(video_file, config):
 
 # --------------------- RUN THE AUTOMATION ---------------------
 if __name__ == "__main__":
+    try:
+        # Check if moviepy can be imported
+        from moviepy.editor import ImageClip, AudioFileClip, concatenate_videoclips
+    except ImportError as e:
+        print(f"Error importing MoviePy: {e}")
+        print("Please ensure that MoviePy is installed in your virtual environment.")
+        exit(1)
+
     user_config = setup_user()
 
     trending_topic = get_trending_topics()
@@ -179,4 +187,3 @@ __pycache__/
 *.mp4
 *.mp3
 *.jpg""")
-
